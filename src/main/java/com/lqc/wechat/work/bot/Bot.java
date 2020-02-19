@@ -9,10 +9,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.lqc.wechat.work.bot.exception.BotException;
-import com.lqc.wechat.work.bot.msg.ImageMsg;
-import com.lqc.wechat.work.bot.msg.MarkdownMsg;
-import com.lqc.wechat.work.bot.msg.TextMsg;
-import com.lqc.wechat.work.bot.msg.BotMsg;
+import com.lqc.wechat.work.bot.msg.*;
+
+import java.util.List;
 
 /**
  * 企业微信机器人对象
@@ -60,6 +59,16 @@ public class Bot {
     }
 
     public void send(ImageMsg msg) {
+        BotMsg botMsg = new BotMsg(msg);
+        doPost(botMsg);
+    }
+
+    public void send(ArticleMsg msg) {
+        BotMsg botMsg = new BotMsg(msg);
+        doPost(botMsg);
+    }
+
+    public void send(List<ArticleMsg> msg) {
         BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }

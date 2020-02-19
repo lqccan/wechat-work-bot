@@ -1,5 +1,10 @@
 package com.lqc.wechat.work.bot.msg;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * 最终包装发送给微信服务器的消息对象
  */
@@ -16,6 +21,8 @@ public class BotMsg {
 
     private ImageMsg image;
 
+    private Map<String, List<ArticleMsg>> news;
+
     public BotMsg(TextMsg text) {
         this.text = text;
         this.msgtype = MsgType.TEXT;
@@ -29,6 +36,20 @@ public class BotMsg {
     public BotMsg(ImageMsg imageMsg) {
         this.image = imageMsg;
         this.msgtype = MsgType.IMAGE;
+    }
+
+    public BotMsg(ArticleMsg articleMsg) {
+        List<ArticleMsg> articleMsgList = new ArrayList<ArticleMsg>();
+        articleMsgList.add(articleMsg);
+        this.msgtype = MsgType.NEWS;
+        this.news = new HashMap<String, List<ArticleMsg>>();
+        this.news.put("articles", articleMsgList);
+    }
+
+    public BotMsg(List<ArticleMsg> articleMsgList) {
+        this.msgtype = MsgType.NEWS;
+        this.news = new HashMap<String, List<ArticleMsg>>();
+        this.news.put("articles", articleMsgList);
     }
 
     public String getMsgtype() {
@@ -61,5 +82,13 @@ public class BotMsg {
 
     public void setImage(ImageMsg image) {
         this.image = image;
+    }
+
+    public Map<String, List<ArticleMsg>> getNews() {
+        return news;
+    }
+
+    public void setNews(Map<String, List<ArticleMsg>> news) {
+        this.news = news;
     }
 }
