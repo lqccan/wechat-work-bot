@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.lqc.wechat.work.bot.exception.BotException;
+import com.lqc.wechat.work.bot.msg.ImageMsg;
 import com.lqc.wechat.work.bot.msg.MarkdownMsg;
 import com.lqc.wechat.work.bot.msg.TextMsg;
 import com.lqc.wechat.work.bot.msg.BotMsg;
@@ -48,13 +49,18 @@ public class Bot {
         this.timeout = timeout;
     }
 
-    public void send(TextMsg textMsg) {
-        BotMsg botMsg = new BotMsg(textMsg);
+    public void send(TextMsg msg) {
+        BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }
 
-    public void send(MarkdownMsg markdownMsg) {
-        BotMsg botMsg = new BotMsg(markdownMsg);
+    public void send(MarkdownMsg msg) {
+        BotMsg botMsg = new BotMsg(msg);
+        doPost(botMsg);
+    }
+
+    public void send(ImageMsg msg) {
+        BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }
 

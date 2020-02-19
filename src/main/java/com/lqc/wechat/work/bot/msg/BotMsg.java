@@ -14,6 +14,8 @@ public class BotMsg {
 
     private MarkdownMsg markdown;
 
+    private ImageMsg image;
+
     public BotMsg(TextMsg text) {
         this.text = text;
         this.msgtype = MsgType.TEXT;
@@ -22,6 +24,11 @@ public class BotMsg {
     public BotMsg(MarkdownMsg markdown) {
         this.markdown = markdown;
         this.msgtype = MsgType.MARKDOWN;
+    }
+
+    public BotMsg(ImageMsg imageMsg) {
+        this.image = imageMsg;
+        this.msgtype = MsgType.IMAGE;
     }
 
     public String getMsgtype() {
@@ -46,5 +53,13 @@ public class BotMsg {
 
     public void setMarkdown(MarkdownMsg markdown) {
         this.markdown = markdown;
+    }
+
+    public ImageMsg getImage() {
+        return image;
+    }
+
+    public void setImage(ImageMsg image) {
+        this.image = image;
     }
 }
