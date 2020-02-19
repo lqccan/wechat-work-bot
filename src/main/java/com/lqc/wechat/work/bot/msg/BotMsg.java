@@ -12,9 +12,16 @@ public class BotMsg {
 
     private TextMsg text;
 
+    private MarkdownMsg markdown;
+
     public BotMsg(TextMsg text) {
         this.text = text;
         this.msgtype = MsgType.TEXT;
+    }
+
+    public BotMsg(MarkdownMsg markdown) {
+        this.markdown = markdown;
+        this.msgtype = MsgType.MARKDOWN;
     }
 
     public String getMsgtype() {
@@ -31,5 +38,13 @@ public class BotMsg {
 
     public void setText(TextMsg text) {
         this.text = text;
+    }
+
+    public MarkdownMsg getMarkdown() {
+        return markdown;
+    }
+
+    public void setMarkdown(MarkdownMsg markdown) {
+        this.markdown = markdown;
     }
 }
