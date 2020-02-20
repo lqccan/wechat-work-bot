@@ -1,4 +1,4 @@
-package com.lqc.wechat.work.bot.exception;
+package com.github.lqccan.wechat.work.bot.exception;
 
 /**
  * 机器人异常

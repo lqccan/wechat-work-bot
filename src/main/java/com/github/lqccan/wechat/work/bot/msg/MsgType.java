@@ -1,4 +1,4 @@
-package com.lqc.wechat.work.bot.msg;
+package com.github.lqccan.wechat.work.bot.msg;
 
 /**
  * 消息类型

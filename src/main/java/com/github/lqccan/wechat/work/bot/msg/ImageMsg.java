@@ -1,4 +1,4 @@
-package com.lqc.wechat.work.bot.msg;
+package com.github.lqccan.wechat.work.bot.msg;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.io.FileUtil;

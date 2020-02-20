@@ -1,4 +1,4 @@
-package com.lqc.wechat.work.bot;
+package com.github.lqccan.wechat.work.bot;
 
 import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
@@ -8,8 +8,8 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.serializer.SerializeConfig;
-import com.lqc.wechat.work.bot.exception.BotException;
-import com.lqc.wechat.work.bot.msg.*;
+import com.github.lqccan.wechat.work.bot.exception.BotException;
+import com.github.lqccan.wechat.work.bot.msg.*;
 
 import java.util.List;
 
