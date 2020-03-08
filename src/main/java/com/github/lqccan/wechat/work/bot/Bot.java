@@ -11,6 +11,7 @@ import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.github.lqccan.wechat.work.bot.exception.BotException;
 import com.github.lqccan.wechat.work.bot.msg.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,33 +49,76 @@ public class Bot {
         this.timeout = timeout;
     }
 
+    /**
+     * 发送文本消息
+     * @param msg
+     */
+    public void send(String msg) {
+        send(msg,false);
+    }
+
+    /**
+     * 发送文本消息
+     * @param msg
+     * @param atAll true：艾特所有人
+     */
+    public void send(String msg, boolean atAll) {
+        TextMsg text = new TextMsg();
+        text.setContent(msg);
+        if (atAll) {
+            text.setMentionedList(Arrays.asList("@all"));
+        }
+        BotMsg botMsg = new BotMsg(text);
+        doPost(botMsg);
+    }
+
+    /**
+     * 发送文本消息
+     * @param msg
+     */
     public void send(TextMsg msg) {
         BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }
 
+    /**
+     * 发送markdown消息
+     * @param msg
+     */
     public void send(MarkdownMsg msg) {
         BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }
 
+    /**
+     * 发送图片消息
+     * @param msg
+     */
     public void send(ImageMsg msg) {
         BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }
 
+    /**
+     * 发送图文消息
+     * @param msg
+     */
     public void send(ArticleMsg msg) {
         BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }
 
+    /**
+     * 发送多个图文消息
+     * @param msg
+     */
     public void send(List<ArticleMsg> msg) {
         BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }
 
     /**
-     * 发送消息
+     * 请求微信接口，实现消息的发送
      * @param botMsg
      */
     public void doPost(BotMsg botMsg){
@@ -94,7 +138,6 @@ public class Bot {
             throw new BotException(e.getMessage());
         }
     }
-
 
 }
 
