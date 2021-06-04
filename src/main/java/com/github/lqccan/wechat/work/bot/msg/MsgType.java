@@ -25,4 +25,9 @@ public interface MsgType {
      */
     String NEWS = "news";
 
+    /**
+     * 文件类型
+     */
+    String FILE = "file";
+
 }

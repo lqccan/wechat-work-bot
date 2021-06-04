@@ -4,6 +4,8 @@ import cn.hutool.core.codec.Base64;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.http.HttpUtil;
+import lombok.Data;
+import lombok.ToString;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,27 +15,13 @@ import java.io.InputStream;
 /**
  * 图片类型消息
  */
+@Data
+@ToString
 public class ImageMsg {
 
     private String base64;
 
     private String md5;
-
-    public String getBase64() {
-        return base64;
-    }
-
-    public void setBase64(String base64) {
-        this.base64 = base64;
-    }
-
-    public String getMd5() {
-        return md5;
-    }
-
-    public void setMd5(String md5) {
-        this.md5 = md5;
-    }
 
     /**
      * 设置图片文件，改方法会自动转换设置base64和md5
@@ -64,7 +52,7 @@ public class ImageMsg {
      * @param url
      */
     public void setFile(String url) {
-        String suffix = url.substring(url.lastIndexOf('.'), url.length());
+        String suffix = url.substring(url.lastIndexOf('.'));
         File tempFile = FileUtil.createTempFile(System.currentTimeMillis()+"",suffix,FileUtil.getTmpDir(),true);
         HttpUtil.downloadFile(url,tempFile);
         setFile(tempFile);

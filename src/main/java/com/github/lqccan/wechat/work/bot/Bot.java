@@ -11,7 +11,7 @@ import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.github.lqccan.wechat.work.bot.exception.BotException;
 import com.github.lqccan.wechat.work.bot.msg.*;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,13 +20,13 @@ import java.util.List;
 public class Bot {
 
     /**
-     * json配置
+     * json配置成SnakeCase模式
      */
-    private static final SerializeConfig config;
+    private static final SerializeConfig CONFIG;
 
     static {
-        config = new SerializeConfig();
-        config.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
+        CONFIG = new SerializeConfig();
+        CONFIG.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
     }
 
     /**
@@ -35,16 +35,15 @@ public class Bot {
     private String webhook;
 
     /**
-     * 超时时间
+     * 超时时间（默认5秒）
      */
-    private int timeout;
+    private int timeout = 5*1000;
 
     public Bot(String webhook) {
         this.webhook = webhook;
-        this.timeout = 5*1000;
     }
 
-    public Bot(String webhook,int timeout) {
+    public Bot(String webhook, int timeout) {
         this.webhook = webhook;
         this.timeout = timeout;
     }
@@ -66,7 +65,7 @@ public class Bot {
         TextMsg text = new TextMsg();
         text.setContent(msg);
         if (atAll) {
-            text.setMentionedList(Arrays.asList("@all"));
+            text.setMentionedList(Collections.singletonList("@all"));
         }
         BotMsg botMsg = new BotMsg(text);
         doPost(botMsg);
@@ -118,12 +117,42 @@ public class Bot {
     }
 
     /**
+     * 发送文件消息
+     * @param msg
+     */
+    public void send(FileMsg msg) {
+        if (msg.getMediaId() == null) {
+            //上传文件获取mediaId
+            try {
+                String upload = webhook.replace("send", "upload_media")+"&type=file";
+                String body = HttpRequest.post(upload)
+                        .header(Header.CONTENT_TYPE, ContentType.MULTIPART.toString())
+                        .form("media", msg.getFile())
+                        .timeout(timeout)
+                        .execute()
+                        .body();
+                JSONObject jsonObject = JSONUtil.parseObj(body);
+                if (jsonObject.getInt("errcode") != 0) {
+                    throw new BotException(jsonObject.getInt("errcode") + " " + jsonObject.getStr("errmsg"));
+                } else {
+                    msg.setMediaId(jsonObject.getStr("media_id"));
+                }
+            } catch (Exception e) {
+                throw new BotException(e.getMessage());
+            }
+        }
+        //发送消息
+        BotMsg botMsg = new BotMsg(msg);
+        doPost(botMsg);
+    }
+
+    /**
      * 请求微信接口，实现消息的发送
      * @param botMsg
      */
     public void doPost(BotMsg botMsg){
         try {
-            String jsonStr = JSON.toJSONString(botMsg, config);
+            String jsonStr = JSON.toJSONString(botMsg, CONFIG);
             String body = HttpRequest.post(webhook)
                     .header(Header.CONTENT_TYPE, ContentType.JSON.toString())
                     .body(jsonStr)

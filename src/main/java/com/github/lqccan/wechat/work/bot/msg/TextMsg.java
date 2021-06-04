@@ -1,10 +1,15 @@
 package com.github.lqccan.wechat.work.bot.msg;
 
+import lombok.Data;
+import lombok.ToString;
+
 import java.util.List;
 
 /**
  * 文字类型消息
  */
+@Data
+@ToString
 public class TextMsg{
 
     /**
@@ -21,29 +26,5 @@ public class TextMsg{
      * 手机号列表列表
      */
     private List<String> mentionedMobileList;
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public List<String> getMentionedList() {
-        return mentionedList;
-    }
-
-    public void setMentionedList(List<String> mentionedList) {
-        this.mentionedList = mentionedList;
-    }
-
-    public List<String> getMentionedMobileList() {
-        return mentionedMobileList;
-    }
-
-    public void setMentionedMobileList(List<String> mentionedMobileList) {
-        this.mentionedMobileList = mentionedMobileList;
-    }
 
 }

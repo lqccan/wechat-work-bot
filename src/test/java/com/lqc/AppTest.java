@@ -1,13 +1,11 @@
 package com.lqc;
 
 import com.github.lqccan.wechat.work.bot.Bot;
-import com.github.lqccan.wechat.work.bot.msg.ArticleMsg;
-import com.github.lqccan.wechat.work.bot.msg.ImageMsg;
-import com.github.lqccan.wechat.work.bot.msg.MarkdownMsg;
-import com.github.lqccan.wechat.work.bot.msg.TextMsg;
+import com.github.lqccan.wechat.work.bot.msg.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +27,7 @@ public class AppTest {
     @Test
     public void textTest() {
         TextMsg textMsg = new TextMsg();
-        textMsg.setContent("文字发送\nhttp://www.3kkg.com");
+        textMsg.setContent("文字发送\nhttp://www.baidu.com");
         bot.send(textMsg);
     }
 
@@ -53,9 +51,10 @@ public class AppTest {
     public void imageTest() {
         ImageMsg imageMsg = new ImageMsg();
         //本地文件
-//        imageMsg.setFile(new File("/Users/xxx.png"));
+        imageMsg.setFile(new File("src/test/0.png"));
+        bot.send(imageMsg);
         //网络文件
-        imageMsg.setFile("https://i.loli.net/2020/02/04/znKwNdcSujE2i4l.png");
+        imageMsg.setFile("http://res.mail.qq.com/node/ww/wwopenmng/images/independent/doc/test_pic_msg1.png");
         bot.send(imageMsg);
     }
 
@@ -67,8 +66,8 @@ public class AppTest {
         ArticleMsg articleMsg = new ArticleMsg();
         articleMsg.setTitle("图文");
         articleMsg.setDescription("这是一条图文消息");
-        articleMsg.setUrl("https://www.3kkg.com");
-        articleMsg.setPicurl("https://i.loli.net/2020/02/04/znKwNdcSujE2i4l.png");
+        articleMsg.setUrl("https://www.baidu.com");
+        articleMsg.setPicurl("http://res.mail.qq.com/node/ww/wwopenmng/images/independent/doc/test_pic_msg1.png");
         bot.send(articleMsg);
     }
 
@@ -82,11 +81,42 @@ public class AppTest {
             ArticleMsg articleMsg = new ArticleMsg();
             articleMsg.setTitle("图文"+i);
             articleMsg.setDescription("这是一条图文消息");
-            articleMsg.setUrl("https://www.3kkg.com");
-            articleMsg.setPicurl("https://i.loli.net/2020/02/04/znKwNdcSujE2i4l.png");
+            articleMsg.setUrl("https://www.baidu.com");
+            articleMsg.setPicurl("http://res.mail.qq.com/node/ww/wwopenmng/images/independent/doc/test_pic_msg1.png");
             list.add(articleMsg);
         }
         bot.send(list);
+    }
+
+    /**
+     * 文件测试
+     */
+    @Test
+    public void fileTest() {
+        FileMsg fileMsg = new FileMsg();
+        //本地文件
+        fileMsg.setFile(new File("src/test/1.xlsx"));
+        bot.send(fileMsg);
+    }
+
+    /**
+     * 全部测试
+     * @throws Exception
+     */
+    @Test
+    public void allTest() throws Exception {
+        textTest();
+        Thread.sleep(1000);
+        markdownTest();
+        Thread.sleep(1000);
+        imageTest();
+        Thread.sleep(1000);
+        articleTest();
+        Thread.sleep(1000);
+        articleListTest();
+        Thread.sleep(1000);
+        fileTest();
+        Thread.sleep(1000);
     }
 
 }

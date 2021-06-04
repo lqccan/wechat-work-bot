@@ -3,16 +3,17 @@ package com.github.lqccan.wechat.work.bot.msg;
 import lombok.Data;
 import lombok.ToString;
 
+import java.io.File;
+
 /**
- * markdown类型消息
+ * 文件类型消息
  */
 @Data
 @ToString
-public class MarkdownMsg {
+public class FileMsg {
 
-    /**
-     * 内容
-     */
-    private String content;
+    private String mediaId;
+
+    private File file;
 
 }

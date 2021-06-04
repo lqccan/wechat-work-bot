@@ -20,4 +20,4 @@ gitee:[https://gitee.com/floow/wechat-work-bot](https://gitee.com/floow/wechat-w
 ```
 
 ## 使用说明
-参考 [http://www.3kkg.com/1057](http://www.3kkg.com/1057)
+参考 [http://qclog.cn/1057](http://qclog.cn/1057)
