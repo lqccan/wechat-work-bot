@@ -1,8 +1,12 @@
 package com.github.lqccan.wechat.work.bot.msg;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import lombok.Data;
 import lombok.ToString;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,14 +34,25 @@ public class BotMsg {
 
     private FileMsg file;
 
-    public BotMsg(TextMsg text) {
-        this.msgtype = MsgType.TEXT;
-        this.text = text;
+    public BotMsg(TextMsg textMsg) {
+        if (textMsg.getContent().getBytes(StandardCharsets.UTF_8).length > 2048) {
+            //文本内容，超过2048个字节，自动转为txt文件发送
+            File file = FileUtil.createTempFile(FileUtil.getTmpDir(), true);
+            file = FileUtil.rename(file, String.format("长消息%s.txt", DateUtil.now()), true);
+            FileUtil.writeString(textMsg.getContent(), file, StandardCharsets.UTF_8);
+            FileMsg fileMsg = new FileMsg();
+            fileMsg.setFile(file);
+            this.msgtype = MsgType.FILE;
+            this.file = fileMsg;
+        } else {
+            this.msgtype = MsgType.TEXT;
+            this.text = textMsg;
+        }
     }
 
-    public BotMsg(MarkdownMsg markdown) {
+    public BotMsg(MarkdownMsg markdownMsg) {
         this.msgtype = MsgType.MARKDOWN;
-        this.markdown = markdown;
+        this.markdown = markdownMsg;
     }
 
     public BotMsg(ImageMsg imageMsg) {

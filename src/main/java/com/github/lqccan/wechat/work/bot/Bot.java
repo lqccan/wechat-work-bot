@@ -121,27 +121,6 @@ public class Bot {
      * @param msg
      */
     public void send(FileMsg msg) {
-        if (msg.getMediaId() == null) {
-            //上传文件获取mediaId
-            try {
-                String upload = webhook.replace("send", "upload_media")+"&type=file";
-                String body = HttpRequest.post(upload)
-                        .header(Header.CONTENT_TYPE, ContentType.MULTIPART.toString())
-                        .form("media", msg.getFile())
-                        .timeout(timeout)
-                        .execute()
-                        .body();
-                JSONObject jsonObject = JSONUtil.parseObj(body);
-                if (jsonObject.getInt("errcode") != 0) {
-                    throw new BotException(jsonObject.getInt("errcode") + " " + jsonObject.getStr("errmsg"));
-                } else {
-                    msg.setMediaId(jsonObject.getStr("media_id"));
-                }
-            } catch (Exception e) {
-                throw new BotException(e.getMessage());
-            }
-        }
-        //发送消息
         BotMsg botMsg = new BotMsg(msg);
         doPost(botMsg);
     }
@@ -152,6 +131,28 @@ public class Bot {
      */
     public void doPost(BotMsg botMsg){
         try {
+            FileMsg file = botMsg.getFile();
+            if (file != null && file.getMediaId() == null) {
+                //文件类型消息，且mediaId为空，则先上传文件获取mediaId
+                try {
+                    String upload = webhook.replace("send", "upload_media") + "&type=file";
+                    String body = HttpRequest.post(upload)
+                            .header(Header.CONTENT_TYPE, ContentType.MULTIPART.toString())
+                            .form("media", file.getFile())
+                            .timeout(timeout)
+                            .execute()
+                            .body();
+                    JSONObject jsonObject = JSONUtil.parseObj(body);
+                    if (jsonObject.getInt("errcode") != 0) {
+                        throw new BotException(jsonObject.getInt("errcode") + " " + jsonObject.getStr("errmsg"));
+                    } else {
+                        file.setMediaId(jsonObject.getStr("media_id"));
+                    }
+                } catch (Exception e) {
+                    throw new BotException(e.getMessage());
+                }
+            }
+            //请求微信接口发送消息
             String jsonStr = JSON.toJSONString(botMsg, CONFIG);
             String body = HttpRequest.post(webhook)
                     .header(Header.CONTENT_TYPE, ContentType.JSON.toString())
@@ -161,8 +162,10 @@ public class Bot {
                     .body();
             JSONObject jsonObject = JSONUtil.parseObj(body);
             if (jsonObject.getInt("errcode") != 0) {
-                throw new BotException(jsonObject.getInt("errcode")+" "+jsonObject.getStr("errmsg"));
+                throw new BotException(jsonObject.getInt("errcode") + " " + jsonObject.getStr("errmsg"));
             }
+        } catch (BotException be) {
+            throw be;
         } catch (Exception e) {
             throw new BotException(e.getMessage());
         }
