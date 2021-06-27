@@ -51,8 +51,14 @@ public class BotMsg {
     }
 
     public BotMsg(MarkdownMsg markdownMsg) {
-        this.msgtype = MsgType.MARKDOWN;
-        this.markdown = markdownMsg;
+        if (this.getBytesLength(markdownMsg.getContent()) > 4096) {
+            //文本内容，超过4096个字节，自动转为txt文件发送
+            this.msgtype = MsgType.FILE;
+            this.file = this.getFileMsg(markdownMsg.getContent());
+        } else {
+            this.msgtype = MsgType.MARKDOWN;
+            this.markdown = markdownMsg;
+        }
     }
 
     public BotMsg(ImageMsg imageMsg) {
@@ -77,6 +83,29 @@ public class BotMsg {
     public BotMsg(FileMsg fileMsg) {
         this.msgtype = MsgType.FILE;
         this.file = fileMsg;
+    }
+
+    /**
+     * 通过内容生成文件对象
+     * @param content
+     * @return
+     */
+    private FileMsg getFileMsg(String content) {
+        File file = FileUtil.createTempFile(FileUtil.getTmpDir(), true);
+        file = FileUtil.rename(file, String.format("长消息%s.txt", DateUtil.now()), true);
+        FileUtil.writeString(content, file, StandardCharsets.UTF_8);
+        FileMsg fileMsg = new FileMsg();
+        fileMsg.setFile(file);
+        return fileMsg;
+    }
+
+    /**
+     * 获取内容字节长度
+     * @param content
+     * @return
+     */
+    private int getBytesLength(String content) {
+        return content.getBytes(StandardCharsets.UTF_8).length;
     }
 
 }
