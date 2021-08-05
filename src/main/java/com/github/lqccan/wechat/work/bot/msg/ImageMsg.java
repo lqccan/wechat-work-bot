@@ -19,12 +19,19 @@ import java.io.InputStream;
 @ToString
 public class ImageMsg {
 
+    /**
+     * 图片内容的base64编码
+     */
     private String base64;
 
+    /**
+     * 图片内容（base64编码前）的md5值
+     */
     private String md5;
 
     /**
-     * 设置图片文件，改方法会自动转换设置base64和md5
+     * 设置图片文件，该方法会自动转换文件为base64和md5
+     *
      * @param file
      */
     public void setFile(File file) {
@@ -49,12 +56,13 @@ public class ImageMsg {
      * 通过网上url的形式设置图片文件
      * 会先通过url下载图片文件之后进行文件发送
      * url不支持301或者302这种跳转到其他图片地址的形式
+     *
      * @param url
      */
     public void setFile(String url) {
         String suffix = url.substring(url.lastIndexOf('.'));
-        File tempFile = FileUtil.createTempFile(System.currentTimeMillis()+"",suffix,FileUtil.getTmpDir(),true);
-        HttpUtil.downloadFile(url,tempFile);
+        File tempFile = FileUtil.createTempFile(System.currentTimeMillis() + "", suffix, FileUtil.getTmpDir(), true);
+        HttpUtil.downloadFile(url, tempFile);
         setFile(tempFile);
     }
 
