@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AppTest {
@@ -28,6 +29,7 @@ public class AppTest {
     public void textTest() {
         TextMsg textMsg = new TextMsg();
         textMsg.setContent("文字发送\nhttp://www.baidu.com");
+        textMsg.setMentionedList(Collections.singletonList("@all"));
         bot.send(textMsg);
     }
 
@@ -50,11 +52,11 @@ public class AppTest {
     @Test
     public void imageTest() {
         ImageMsg imageMsg = new ImageMsg();
-        //本地文件
-        imageMsg.setFile(new File("src/test/0.png"));
-        bot.send(imageMsg);
         //网络文件
-        imageMsg.setFile("http://res.mail.qq.com/node/ww/wwopenmng/images/independent/doc/test_pic_msg1.png");
+        imageMsg.setUrl("http://res.mail.qq.com/node/ww/wwopenmng/images/independent/doc/test_pic_msg1.png");
+        bot.send(imageMsg);
+        //本地文件
+        imageMsg.setFile(new File("src/test/图片.png"));
         bot.send(imageMsg);
     }
 
@@ -93,9 +95,14 @@ public class AppTest {
      */
     @Test
     public void fileTest() {
+        //发送文件
         FileMsg fileMsg = new FileMsg();
-        //本地文件
-        fileMsg.setFile(new File("src/test/1.xlsx"));
+        fileMsg.setFile(new File("src/test/表格.xlsx"));
+        bot.send(fileMsg);
+        //指定显示名称
+        fileMsg = new FileMsg();
+        fileMsg.setFile(new File("src/test/中文.txt"));
+        fileMsg.setFileName("显示文件名.txt");
         bot.send(fileMsg);
     }
 

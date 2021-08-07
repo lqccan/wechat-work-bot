@@ -8,7 +8,7 @@ import lombok.ToString;
  */
 @Data
 @ToString
-public class ResMsg{
+public class ResMsg {
 
     /**
      * code==0表示请求成功

@@ -66,13 +66,11 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.12.3</version>
         </dependency>
-
-
-        <!--hutool-->
+        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-crypto -->
         <dependency>
             <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-            <version>5.6.6</version>
+            <artifactId>hutool-crypto</artifactId>
+            <version>5.7.7</version>
         </dependency>
     </dependencies>
 

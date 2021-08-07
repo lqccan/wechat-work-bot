@@ -10,7 +10,7 @@ import java.util.List;
  */
 @Data
 @ToString
-public class TextMsg{
+public class TextMsg {
 
     /**
      * 内容

@@ -1,5 +1,8 @@
 package com.github.lqccan.wechat.work.bot;
 
+import cn.hutool.core.codec.Base64;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -8,6 +11,9 @@ import com.github.lqccan.wechat.work.bot.msg.*;
 import okhttp3.*;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -149,6 +155,61 @@ public class Bot {
     }
 
     /**
+     * 处理消息
+     *
+     * @param botMsg
+     */
+    private void handleMsg(BotMsg botMsg) {
+        if (MsgType.FILE.equals(botMsg.getMsgtype()) && botMsg.getFile() != null) {
+            FileMsg file = botMsg.getFile();
+            if (file.getMediaId() == null) {
+                //mediaId为空，先上传文件获取mediaId
+                String mediaId = this.getMediaId(file.getFile(), file.getFileName());
+                file.setMediaId(mediaId);
+            }
+        } else if (MsgType.IMAGE.equals(botMsg.getMsgtype()) && botMsg.getImage() != null) {
+            ImageMsg image = botMsg.getImage();
+            File file = image.getFile();
+            boolean clearFile = false;
+            if (file == null && image.getUrl() != null) {
+                //网络图片，先根据url地址下载图片
+                String suffix = image.getUrl().substring(image.getUrl().lastIndexOf('.'));
+                file = FileUtil.createTempFile(System.currentTimeMillis() + "", suffix, FileUtil.getTmpDir(), true);
+                Request request = new Request.Builder().url(image.getUrl()).get().build();
+                try (Response response = okHttpClient.newCall(request).execute()) {
+                    if (!response.isSuccessful() || response.body() == null) {
+                        throw new BotException(response.toString());
+                    }
+                    FileUtil.writeBytes(response.body().bytes(), file);
+                    clearFile = true;
+                } catch (BotException be) {
+                    throw be;
+                } catch (Exception e) {
+                    throw new BotException(e);
+                }
+            }
+            if (file != null && file.exists()) {
+                //读取图片文件字节并进行编码
+                byte[] data = null;
+                try {
+                    InputStream in = new FileInputStream(file);
+                    data = new byte[in.available()];
+                    in.read(data);
+                    in.close();
+                } catch (IOException e) {
+                    throw new BotException(e);
+                }
+                image.setBase64(Base64.encode(data));
+                image.setMd5(DigestUtil.md5Hex(data));
+                //清理文件
+                if (clearFile) {
+                    file.deleteOnExit();
+                }
+            }
+        }
+    }
+
+    /**
      * 上传文件到微信服务器，获取mediaId
      *
      * @param file
@@ -191,12 +252,7 @@ public class Bot {
      * @param botMsg
      */
     public void doSend(BotMsg botMsg) {
-        FileMsg file = botMsg.getFile();
-        if (file != null && file.getMediaId() == null) {
-            //文件类型消息，且mediaId为空，则先上传文件获取mediaId
-            String mediaId = this.getMediaId(file.getFile(), file.getFileName());
-            file.setMediaId(mediaId);
-        }
+        this.handleMsg(botMsg);
         //请求微信接口发送消息
         String botJson = null;
         try {

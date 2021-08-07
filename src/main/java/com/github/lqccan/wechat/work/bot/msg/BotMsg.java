@@ -87,6 +87,7 @@ public class BotMsg {
 
     /**
      * 通过内容生成文件对象
+     *
      * @param content
      * @return
      */
@@ -101,6 +102,7 @@ public class BotMsg {
 
     /**
      * 获取内容字节长度
+     *
      * @param content
      * @return
      */
