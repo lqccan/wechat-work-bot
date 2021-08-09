@@ -7,7 +7,7 @@
 
     <groupId>com.github.lqccan</groupId>
     <artifactId>wechat-work-bot</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.5-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/lqccan/wechat-work-bot</url>
 

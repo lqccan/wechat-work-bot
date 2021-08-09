@@ -6,6 +6,7 @@ import cn.hutool.crypto.digest.DigestUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.github.lqccan.wechat.work.bot.exception.BotException;
 import com.github.lqccan.wechat.work.bot.msg.*;
 import okhttp3.*;
@@ -62,10 +63,16 @@ public class Bot {
         }
         this.uploadUrl = webhook.replace("send", "upload_media") + "&type=file";
         this.objectMapper = new ObjectMapper();
-        this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        try{
+            // 2.12版本之后PropertyNamingStrategy使用新的PropertyNamingStrategies代替
+            // 为了兼容老版本，优先使用PropertyNamingStrategies，类不存在则使用老版本PropertyNamingStrategy
+            Class.forName("com.fasterxml.jackson.databind.PropertyNamingStrategies");
+            this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        }catch (ClassNotFoundException e) {
+            this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        }
         this.okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(timeout, TimeUnit.SECONDS)
-                .callTimeout(timeout, TimeUnit.SECONDS)
                 .build();
     }
 
