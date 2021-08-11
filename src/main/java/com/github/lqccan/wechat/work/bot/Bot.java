@@ -9,25 +9,29 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.github.lqccan.wechat.work.bot.exception.BotException;
 import com.github.lqccan.wechat.work.bot.msg.*;
-import okhttp3.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 企业微信机器人对象
  */
 public class Bot {
-
-    /**
-     * 默认超时时间（5秒）
-     */
-    private static final long DEFAULT_TIMEOUT = 5 * 1000L;
 
     /**
      * 企业微信群中获取的webhook地址
@@ -45,35 +49,26 @@ public class Bot {
     private ObjectMapper objectMapper;
 
     /**
-     * OkHttpClient http请求
+     * HttpClient http请求
      */
-    private OkHttpClient okHttpClient;
+    private CloseableHttpClient httpClient;
 
     public Bot(String webhook) {
-        this(webhook, null);
-    }
-
-    public Bot(String webhook, Long timeout) {
         if (webhook == null) {
             throw new BotException("webhook cannot be null");
         }
         this.webhook = webhook;
-        if (timeout == null || timeout <= 0) {
-            timeout = DEFAULT_TIMEOUT;
-        }
         this.uploadUrl = webhook.replace("send", "upload_media") + "&type=file";
         this.objectMapper = new ObjectMapper();
-        try{
+        try {
             // 2.12版本之后PropertyNamingStrategy使用新的PropertyNamingStrategies代替
             // 为了兼容老版本，优先使用PropertyNamingStrategies，类不存在则使用老版本PropertyNamingStrategy
             Class.forName("com.fasterxml.jackson.databind.PropertyNamingStrategies");
             this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        }catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         }
-        this.okHttpClient = new OkHttpClient.Builder()
-                .connectTimeout(timeout, TimeUnit.SECONDS)
-                .build();
+        this.httpClient = HttpClients.createDefault();
     }
 
     /**
@@ -182,16 +177,14 @@ public class Bot {
                 //网络图片，先根据url地址下载图片
                 String suffix = image.getUrl().substring(image.getUrl().lastIndexOf('.'));
                 file = FileUtil.createTempFile(System.currentTimeMillis() + "", suffix, FileUtil.getTmpDir(), true);
-                Request request = new Request.Builder().url(image.getUrl()).get().build();
-                try (Response response = okHttpClient.newCall(request).execute()) {
-                    if (!response.isSuccessful() || response.body() == null) {
+                HttpGet httpGet = new HttpGet(image.getUrl());
+                try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+                    if (response.getStatusLine().getStatusCode() != 200) {
                         throw new BotException(response.toString());
                     }
-                    FileUtil.writeBytes(response.body().bytes(), file);
+                    FileUtil.writeFromStream(response.getEntity().getContent(), file);
                     clearFile = true;
-                } catch (BotException be) {
-                    throw be;
-                } catch (Exception e) {
+                } catch (IOException e) {
                     throw new BotException(e);
                 }
             }
@@ -210,7 +203,7 @@ public class Bot {
                 image.setMd5(DigestUtil.md5Hex(data));
                 //清理文件
                 if (clearFile) {
-                    file.deleteOnExit();
+                    file.delete();
                 }
             }
         }
@@ -227,28 +220,23 @@ public class Bot {
         if (fileName == null || "".equals(fileName.trim())) {
             fileName = file.getName();
         }
-        RequestBody fileBody = RequestBody.create(file, MediaType.parse("application/octet-stream"));
-        MultipartBody multipartBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("media", fileName, fileBody)
+        HttpPost httpPost = new HttpPost(uploadUrl);
+        HttpEntity httpEntity = MultipartEntityBuilder.create()
+                .setContentType(ContentType.create("multipart/form-data"))
+                .setMode(HttpMultipartMode.RFC6532)
+                .addBinaryBody("media", file, ContentType.create("application/octet-stream"), fileName)
                 .build();
-        Request request = new Request.Builder()
-                .url(uploadUrl)
-                .addHeader("Content-Type", "multipart/form-data")
-                .post(multipartBody)
-                .build();
-        try (Response response = okHttpClient.newCall(request).execute()) {
-            if (!response.isSuccessful() || response.body() == null) {
+        httpPost.setEntity(httpEntity);
+        try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+            if (response.getStatusLine().getStatusCode() != 200) {
                 throw new BotException(response.toString());
             }
-            ResMsg res = objectMapper.readValue(response.body().byteStream(), ResMsg.class);
+            ResMsg res = objectMapper.readValue(response.getEntity().getContent(), ResMsg.class);
             if (res.getErrcode() != 0) {
                 throw new BotException(res.getErrmsg());
             }
             return res.getMediaId();
-        } catch (BotException be) {
-            throw be;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new BotException(e);
         }
     }
@@ -261,28 +249,24 @@ public class Bot {
     public void doSend(BotMsg botMsg) {
         this.handleMsg(botMsg);
         //请求微信接口发送消息
-        String botJson = null;
+        String botJson;
         try {
             botJson = objectMapper.writeValueAsString(botMsg);
         } catch (JsonProcessingException ex) {
             throw new BotException(ex);
         }
-        RequestBody requestBody = RequestBody.create(botJson, MediaType.parse("application/json"));
-        Request request = new Request.Builder()
-                .url(webhook)
-                .post(requestBody)
-                .build();
-        try (Response response = okHttpClient.newCall(request).execute()) {
-            if (!response.isSuccessful() || response.body() == null) {
+        HttpPost httpPost = new HttpPost(webhook);
+        HttpEntity httpEntity = new StringEntity(botJson, ContentType.create("application/json", StandardCharsets.UTF_8));
+        httpPost.setEntity(httpEntity);
+        try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+            if (response.getStatusLine().getStatusCode() != 200) {
                 throw new BotException(response.toString());
             }
-            ResMsg res = objectMapper.readValue(response.body().byteStream(), ResMsg.class);
+            ResMsg res = objectMapper.readValue(response.getEntity().getContent(), ResMsg.class);
             if (res.getErrcode() != 0) {
                 throw new BotException(res.getErrmsg());
             }
-        } catch (BotException be) {
-            throw be;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new BotException(e);
         }
     }
